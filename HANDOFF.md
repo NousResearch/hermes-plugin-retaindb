@@ -1,46 +1,45 @@
-# Handoff notes — hermes-plugin-retaindb
+# Maintenance notes — hermes-plugin-retaindb
 
-This repository is a **handoff copy** of the `retaindb` memory provider that shipped inside
-`NousResearch/hermes-agent` under `plugins/memory/retaindb/`. Nous Research is moving every memory
-provider out of the core tree; this repo exists so the upstream project (https://retaindb.com)
-can clone it, take ownership, and submit it to the [Hermes plugin catalog](https://hermes-agent.nousresearch.com/plugins)
-under their own org. It is **not** an officially maintained Nous plugin.
-
-What it is: RetainDB memory.
+This repository is the `retaindb` memory provider that shipped inside `NousResearch/hermes-agent` under
+`plugins/memory/retaindb/`. Nous Research moved every memory provider out of the core tree; this repo is
+now its home, **maintained by Nous Research** and listed in the
+[Hermes plugin catalog](https://hermes-agent.nousresearch.com/docs/plugins/retaindb) as `retaindb` (tier
+`official`), pinned to a reviewed release tag. If RetainDB (https://retaindb.com) wants to own the plugin, open an issue here: we transfer the repo or re-point the catalog entry at their fork, keeping the `retaindb` name so existing users migrate.
 
 ## Install (as a user)
 
 ```
-hermes plugins install NousResearch/hermes-plugin-retaindb
-hermes plugins enable retaindb
+hermes plugins install retaindb     # from the catalog, at the reviewed pin
 hermes memory setup            # or: set memory.provider: retaindb in config.yaml
 ```
 
-Dependencies in `pyproject.toml` are installed into the Hermes venv automatically and survive
-`hermes update`.
+Users who already had `memory.provider: retaindb` need do nothing: once core drops its bundled copy,
+`hermes update` (and agent start) installs this plugin from the catalog automatically. Config
+(`memory.retaindb` / plugin sections) and data files are unchanged. Dependencies in `pyproject.toml` are
+installed into the Hermes venv automatically and survive `hermes update`.
 
-## What changed versus the in-tree copy
+## Keeping it in sync with core
 
-Mechanical only; behaviour is identical.
+Code here tracks the last in-tree copy (`git log -- plugins/memory/retaindb` in hermes-agent) verbatim.
+Every release is a tag `vX.Y.Z` matching `version` in `plugin.yaml` and `pyproject.toml`; the catalog
+pin moves only through a hermes-agent PR that bumps `sha:` and `version:` together.
 
-- Absolute self-imports (`from plugins.memory.retaindb.x import ...`) became relative imports so the
-  package loads from `~/.hermes/plugins/retaindb/` under the loader's synthetic namespace.
-- No shared helpers needed.
-- Added `pyproject.toml` declaring: `requests>=2.31,<3`.
+Differences versus the in-tree copy (mechanical only; behaviour is identical):
 
-## For the maintainer taking this over
+- Self-imports are relative so the package loads from `~/.hermes/plugins/retaindb/` under the loader's
+  synthetic namespace.
+- `pyproject.toml` is the dependency authority (no `tools.lazy_deps` calls).
 
-- `config_schema.py` still imports from `plugins.memory.config_schema`: Hermes core loads that file
-  directly and the dashboard expects core's `ProviderConfigSchema` type, so it must not be vendored.
+## For maintainers
+
 - The in-tree `tools.lazy_deps.ensure("memory.retaindb")` calls were removed: they pinned the exact
   (old) version in Hermes' lazy-deps registry and downgraded newer installs (hermes-agent#86992).
   `pyproject.toml` is now the only dependency authority; bump it when you need a newer client.
-- The setup wizard imports private helpers from `hermes_cli.memory_setup` (`_curses_select`,
-  `_prompt`, ...). Those are Hermes internals, not API; expect to own a copy or drop the wizard
-  hook if they move.
-- Tests were not copied: the in-tree tests import `plugins.memory.retaindb` and depend on the
-  hermes-agent test harness. See `tests/plugins/memory/` in hermes-agent for the originals.
-- While the in-tree copy still exists, a same-named user plugin is shadowed by it
-  (bundled providers win on name). It takes effect the moment core drops `plugins/memory/retaindb`.
+- `tests/` holds the in-tree tests (`tests/plugins/memory/test_retaindb*.py` in hermes-agent) with the
+  import path switched to the package `tests/conftest.py` loads from this repo. Run them locally with
+  `HERMES_AGENT_REPO=~/.hermes/hermes-agent PYTHONPATH=~/.hermes/hermes-agent python -m pytest -q`;
+  CI runs the same on Linux, macOS and Windows against hermes-agent `main`.
+- While a Hermes install still carries the bundled `plugins/memory/retaindb`, that copy wins on name and
+  this plugin is dormant; it takes over once core drops the bundled directory.
 
 Original authors are preserved in hermes-agent's history: `git log -- plugins/memory/retaindb`.

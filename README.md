@@ -1,4 +1,4 @@
-> **Handoff repository.** This is the standalone copy of the `retaindb` memory provider formerly bundled with Hermes Agent, published so its upstream maintainers can take it over. Not an official Nous Research plugin. See [HANDOFF.md](HANDOFF.md).
+> **Maintained by Nous Research.** This is the `retaindb` memory provider that used to ship inside Hermes Agent under `plugins/memory/retaindb/`; it now installs from the [Hermes plugin catalog](https://hermes-agent.nousresearch.com/docs/plugins/retaindb). Existing `memory.provider: retaindb` setups keep their config and data. See [HANDOFF.md](HANDOFF.md).
 
 # RetainDB Memory Provider
 
@@ -7,7 +7,7 @@ Cloud memory API with hybrid search (Vector + BM25 + Reranking) and 7 memory typ
 ## Requirements
 
 - RetainDB account ($20/month) from [retaindb.com](https://www.retaindb.com)
-- `pip install requests`
+- `requests` (declared in `pyproject.toml`; `hermes plugins install` puts it in the Hermes venv, and Hermes core already ships it)
 
 ## Setup
 

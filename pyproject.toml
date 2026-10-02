@@ -1,6 +1,6 @@
 [project]
 name = "hermes-plugin-retaindb"
-version = "1.0.0"
+version = "1.0.1"
 description = "Hermes Agent memory provider plugin: retaindb"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -10,3 +10,6 @@ license = { text = "MIT" }
 dependencies = [
     "requests>=2.31,<3",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
